@@ -1,53 +1,56 @@
-/**
- * Punto de entrada principal del TPO.
- * Orquesta: Lector -> FloydWarshall -> Solver
- * (Corregido para usar Lector.java)
- */
+//Generador -> Lector -> FloydWarshall -> Solver -> Escritor
 public class Main {
 
     public static void main(String[] args) {
+
+        // --- 1. GENERAR CASO DE PRUEBA ---
+        System.out.println("--- Generando un caso de prueba ---");
         
+
+        String[] argsGenerador = new String[] {
+             "--nodos", "20", "--hubs", "3", "--paquetes", "10", "--seed", "20241"
+        };
+        
+        
+        GeneradorVRP.generarArchivoCaso(argsGenerador);
+        System.out.println("--- 'caso.txt' generado ---");
+
         System.out.println("--- Iniciando TPO de Programación III ---");
-        String nombreArchivo = "caso.txt";
+        String nombreArchivo = "caso.txt"; 
 
         try {
-            // --- 1. Lectura del Problema (USANDO Lector) ---
-            System.out.println("Leyendo archivo: " + nombreArchivo + " ...");
-            // Aquí estaba el error -> Lector.Problema y Lector.leerArchivo
+            // --- 2. Lectura y Pre-procesamiento ---
             Lector.Problema problema = Lector.leerArchivo(nombreArchivo);
-            
-            if (problema == null) {
-                System.err.println("ERROR FATAL: No se pudo leer el problema.");
-                return;
-            }
-            
-            // --- 2. Pre-procesamiento (Floyd-Warshall) ---
-            System.out.println("Ejecutando pre-procesamiento (Floyd-Warshall)...");
+            if (problema == null) return;
             FloydWarshall.calcularCaminosMinimos(problema);
-            System.out.println("¡Pre-procesamiento completado!");
-
-            // Aquí estaba el error -> Lector.imprimirProblema
             Lector.imprimirProblema(problema);
 
+            // --- 3. Resolver el Problema (Medir Tiempo) ---
+            System.out.println("\nIniciando Solver (Backtracking)...");
+            long inicioSolver = System.nanoTime(); // Iniciar timer
 
-            // --- 3. Resolver el Problema ---
-            System.out.println("\nIniciando Solver...");
             Solver solver = new Solver(problema);
             Solucion solucionOptima = solver.encontrarMejorSolucion();
 
-            // --- 4. Imprimir la Solución Final ---
+            long finSolver = System.nanoTime(); // Detener timer
+            double tiempoEjecucion = (finSolver - inicioSolver) / 1_000_000_000.0; // Convertir a segundos
+
+            // --- 4. Imprimir y Escribir la Solución Final ---
             if (solucionOptima != null) {
                 solucionOptima.imprimir();
+                System.out.printf("\nSolver finalizado en %.6f segundos.\n", tiempoEjecucion);
+                
+                EscritorSolucion.escribir(solucionOptima, tiempoEjecucion);
+                System.out.println("Archivo 'solucion.txt' generado.");
+                
             } else {
                 System.out.println("\nNo se encontró ninguna solución.");
             }
-
 
         } catch (Exception e) {
             System.err.println("ERROR FATAL: Ocurrió un error inesperado en Main.");
             e.printStackTrace();
         }
-
         System.out.println("\n--- Ejecución Finalizada ---");
     }
 }

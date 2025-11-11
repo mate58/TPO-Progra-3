@@ -5,12 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Lector oficial del TPO.
- * (Versión 2 - CORREGIDA)
- * * Esta versión arregla el bug donde no se leían las secciones
- * después de 'NODOS'.
- */
+
 public class Lector {
 
     // --- ESTRUCTURAS DE DATOS ---
@@ -32,11 +27,6 @@ public class Lector {
     }
 
     // --- LÓGICA DE PARSEO ---
-
-    /**
-     * Elimina comentarios (//) de una línea.
-     * Si la línea es SOLO un comentario, devuelve un string vacío.
-     */
     private static String eliminarComentario(String linea) {
         int commentIndex = linea.indexOf("//");
         if (commentIndex != -1) {
@@ -46,10 +36,8 @@ public class Lector {
         return linea.trim();
     }
 
-    /**
-     * Lee un archivo de problema y retorna un objeto Problema.
-     * (Lógica de parseo corregida)
-     */
+ 
+    //Lee un archivo de problema y retorna un objeto Problema.
     public static Problema leerArchivo(String nombreArchivo) {
         Problema p = new Problema();
 
@@ -70,10 +58,9 @@ public class Lector {
                 }
 
                 // --- 3. DETECCIÓN DE CAMBIO DE SECCIÓN ---
-                // Esto es lo más importante. Buscamos los "headers".
                 if (lineaTrimmed.startsWith("// --- NODOS")) {
                     seccionActual = Seccion.NODOS;
-                    continue; // Header procesado, vamos a la siguiente línea
+                    continue;
                 }
                 if (lineaTrimmed.startsWith("// --- HUBS")) {
                     seccionActual = Seccion.HUBS;
@@ -89,12 +76,8 @@ public class Lector {
                 }
                 
                 // --- 4. PROCESADO DE LÍNEA DE DATOS ---
-                
-                // Si no es un header, es una línea de datos.
-                // Ahora sí, eliminamos comentarios (ej. "... // Deposito")
                 String lineaDeDatos = eliminarComentario(lineaOriginal);
 
-                // Si la línea (sin comentarios) queda vacía, la saltamos
                 if (lineaDeDatos.isEmpty()) {
                     continue;
                 }
@@ -104,7 +87,6 @@ public class Lector {
                     continue;
                 }
 
-                // Procesar la línea según la sección actual
                 try {
                     switch (seccionActual) {
                         case CONFIG:
@@ -131,10 +113,8 @@ public class Lector {
                         
                         case HUBS:
                             if (partes.length >= 2 && p.hubs.size() < p.numHubs) {
-                                // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
                                 // Reemplazamos la coma por un punto
                                 String costoConPunto = partes[1].replace(',', '.');
-                                // ---------------------------------
                                 p.hubs.add(new Hub(
                                     Integer.parseInt(partes[0]),
                                     Double.parseDouble(costoConPunto)
@@ -154,7 +134,6 @@ public class Lector {
 
                         case ARISTAS:
                                 if (partes.length >= 3) {
-                                // --- ¡LA CORRECCIÓN! ---
                                 String pesoConPunto = partes[2].replace(',', '.');
                                 int u = Integer.parseInt(partes[0]);
                                 int v = Integer.parseInt(partes[1]);
@@ -195,7 +174,6 @@ public class Lector {
         return p;
     }
 
-    // --- El método 'imprimirProblema' y 'main' se quedan igual ---
 
     public static void imprimirProblema(Problema p) {
         System.out.println("\n============== RESUMEN DEL PROBLEMA CARGADO ===============");

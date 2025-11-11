@@ -8,7 +8,6 @@ import java.util.Random;
 
 /**
  * Generador de casos de prueba para el Problema de Enrutamiento de Vehículos (VRP).
- * Esta es una traducción de un script en C.
  */
 public class GeneradorVRP {
 
@@ -61,7 +60,7 @@ public class GeneradorVRP {
 
     // --- Lógica Principal ---
 
-    public static void generarCaso(String[] args) {
+    public static void generarArchivoCaso(String[] args) {
         
         // --- 1. CONFIGURACIÓN Y PARSEO ---
         int numNodos = 10;

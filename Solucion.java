@@ -1,17 +1,10 @@
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Representa una solución completa al problema.
- * Contiene la lista de rutas, los hubs activados y el costo total.
- */
+
 public class Solucion {
 
-    /**
-     * Clase interna para representar una ruta individual de un camión.
-     */
     public static class Ruta {
-        // Nodos en orden: ej. [0 (Depósito), 7, 12, 1 (Hub)]
         public List<Integer> nodosVisitados = new ArrayList<>();
         public double costoDistanciaRuta = 0.0;
         public int paquetesEntregados = 0;
@@ -30,16 +23,12 @@ public class Solucion {
     public double costoTotalDistancia = 0.0;
     public double costoTotalActivacion = 0.0;
     
-    /**
-     * Calcula el costo total combinado de la solución.
-     */
+    //Calcula el costo total combinado de la solución.
     public double getCostoTotal() {
         return costoTotalDistancia + costoTotalActivacion;
     }
 
-    /**
-     * Imprime la solución de forma legible.
-     */
+    //Imprime la solución de forma legible.
     public void imprimir() {
         System.out.println("\n========= SOLUCIÓN ÓPTIMA ==========");
         System.out.printf("COSTO TOTAL: %.2f\n", getCostoTotal());

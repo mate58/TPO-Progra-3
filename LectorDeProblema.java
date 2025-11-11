@@ -3,26 +3,15 @@ import java.io.FileNotFoundException;
 import java.util.Locale;
 import java.util.Scanner;
 
-/**
- * Lector/Parser para el archivo de problema VRP.
- * Lee un archivo 'caso.txt' y lo carga en un objeto 'Problema'.
- * Incluye un main() para probar la carga e impresión.
- */
+
 public class LectorDeProblema {
 
-    // ==================================================================
-    // 1. CLASES DE DATOS (Equivalente a 'struct')
-    // ==================================================================
-
-    /**
-     * Contenedor principal para todos los datos del problema.
-     */
     static class Problema {
         int num_nodos, num_hubs, num_paquetes, capacidad_camion, deposito_id;
         Nodo[] nodos;
         Hub[] hubs;
         Paquete[] paquetes;
-        double[][] grafo_distancias; // Matriz de adyacencia
+        double[][] grafo_distancias;
     }
 
     static class Nodo {
@@ -42,10 +31,7 @@ public class LectorDeProblema {
         int id_nodo_destino;
     }
 
-    // ==================================================================
-    // 3. FUNCIÓN MAIN (Punto de entrada para probar)
-    // ==================================================================
-
+ 
     public static void main(String[] args) {
         if (args.length != 1) {
             System.err.println("Uso: java LectorDeProblema <nombre_del_archivo.txt>");
@@ -60,9 +46,7 @@ public class LectorDeProblema {
             
             System.out.println("\n¡Archivo leído y procesado con éxito!");
             imprimirProblema(problema);
-            
-            // No se necesita liberar_memoria(problema)
-            // El Garbage Collector (GC) de Java lo hace automáticamente.
+
             System.out.println("\nMemoria gestionada automáticamente por el GC de Java.");
 
         } catch (FileNotFoundException e) {
@@ -73,26 +57,20 @@ public class LectorDeProblema {
         }
     }
 
-    // ==================================================================
-    // 4. IMPLEMENTACIÓN DE LAS FUNCIONES
-    // ==================================================================
 
     /**
-     * Lee el archivo de problema y devuelve un objeto Problema.
-     * @param nombreArchivo El path al archivo (ej. "caso.txt")
+     * @param nombreArchivo El path al archivo
      * @return Un objeto Problema con todos los datos cargados.
      * @throws FileNotFoundException Si el archivo no se encuentra.
      */
     public static Problema leerArchivo(String nombreArchivo) throws FileNotFoundException {
-        // Usamos Scanner para leer el archivo. Es el análogo a fscanf.
-        // Usamos Locale.US para que lea los decimales con "." (ej. 123.45)
         Scanner scanner = new Scanner(new File(nombreArchivo));
         scanner.useLocale(Locale.US);
 
         Problema p = new Problema();
 
-        // --- Lectura de la Configuración ---
-        scanner.nextLine(); // Descarta "// --- CONFIGURACION ---"
+  
+        scanner.nextLine();
         
         // Leemos cada valor uno por uno
         scanner.next(); // Descarta "NODOS"
@@ -110,36 +88,35 @@ public class LectorDeProblema {
         scanner.next(); // Descarta "DEPOSITO_ID"
         p.deposito_id = scanner.nextInt();
 
-        // --- Asignación de Memoria (Creación de Arrays) ---
+        // --- Asignación de Memoria ---
         p.nodos = new Nodo[p.num_nodos];
         p.hubs = new Hub[p.num_hubs];
         p.paquetes = new Paquete[p.num_paquetes];
-        // En Java, los arrays numéricos se inicializan en 0.0 (como calloc)
         p.grafo_distancias = new double[p.num_nodos][p.num_nodos]; 
 
-        scanner.nextLine(); // Consumir el resto de la línea de DEPOSITO_ID
-        scanner.nextLine(); // Consumir la línea en blanco
+        scanner.nextLine();
+        scanner.nextLine(); 
 
         // --- Lectura de Nodos ---
-        scanner.nextLine(); // Consumir comentario "// --- NODOS..."
+        scanner.nextLine();
         for (int i = 0; i < p.num_nodos; i++) {
             p.nodos[i] = new Nodo();
             p.nodos[i].id = scanner.nextInt();
             p.nodos[i].x = scanner.nextInt();
             p.nodos[i].y = scanner.nextInt();
-            scanner.nextLine(); // Consumir el comentario (ej. "// Deposito")
+            scanner.nextLine();
         }
 
-        scanner.nextLine(); // Consumir línea en blanco
-        scanner.nextLine(); // Consumir comentario "// --- HUBS..."
+        scanner.nextLine(); 
+        scanner.nextLine();
         for (int i = 0; i < p.num_hubs; i++) {
             p.hubs[i] = new Hub();
             p.hubs[i].id_nodo = scanner.nextInt();
             p.hubs[i].costo_activacion = scanner.nextDouble();
         }
 
-        scanner.nextLine(); // Consumir línea en blanco
-        scanner.nextLine(); // Consumir comentario "// --- PAQUETES..."
+        scanner.nextLine();
+        scanner.nextLine();
         for (int i = 0; i < p.num_paquetes; i++) {
             p.paquetes[i] = new Paquete();
             p.paquetes[i].id = scanner.nextInt();
@@ -147,8 +124,8 @@ public class LectorDeProblema {
             p.paquetes[i].id_nodo_destino = scanner.nextInt();
         }
 
-        scanner.nextLine(); // Consumir línea en blanco
-        scanner.nextLine(); // Consumir comentario "// --- ARISTAS..."
+        scanner.nextLine();
+        scanner.nextLine();
         
         // Leemos aristas hasta que no haya más enteros
         while (scanner.hasNextInt()) {
@@ -162,12 +139,11 @@ public class LectorDeProblema {
             }
         }
 
-        scanner.close(); // Equivalente a fclose(fp)
+        scanner.close();
         return p;
     }
 
     /**
-     * Imprime un resumen de los datos del problema en la consola.
      * @param p El objeto Problema cargado.
      */
     public static void imprimirProblema(Problema p) {
