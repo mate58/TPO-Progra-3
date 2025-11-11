@@ -147,7 +147,7 @@ public class LectorDeProblema {
      * @param p El objeto Problema cargado.
      */
     public static void imprimirProblema(Problema p) {
-        System.out.println("\n============== RESUMEN DEL PROBLEMA CARGADO ===============");
+        System.out.println("\n============================== RESUMEN DEL PROBLEMA CARGADO ===============================");
         System.out.println("\n--- CONFIGURACION ---");
         System.out.printf("Total de Nodos:\t\t%d\n", p.num_nodos);
         System.out.printf("Total de Hubs:\t\t%d\n", p.num_hubs);

@@ -11,7 +11,6 @@ public class Main {
              "--nodos", "20", "--hubs", "3", "--paquetes", "10", "--seed", "20241"
         };
         
-        
         GeneradorVRP.generarArchivoCaso(argsGenerador);
         System.out.println("--- 'caso.txt' generado ---");
 

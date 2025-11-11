@@ -30,7 +30,7 @@ public class Solucion {
 
     //Imprime la solución de forma legible.
     public void imprimir() {
-        System.out.println("\n========= SOLUCIÓN ÓPTIMA ==========");
+        System.out.println("\n========================= SOLUCIÓN ÓPTIMA ==========================");
         System.out.printf("COSTO TOTAL: %.2f\n", getCostoTotal());
         System.out.printf(" (Distancia: %.2f + Activación Hubs: %.2f)\n",
                 costoTotalDistancia, costoTotalActivacion);
@@ -52,6 +52,6 @@ public class Solucion {
                 System.out.println(r);
             }
         }
-        System.out.println("=====================================");
+        System.out.println("======================================================================");
     }
 }

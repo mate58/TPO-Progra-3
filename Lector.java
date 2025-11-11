@@ -30,7 +30,6 @@ public class Lector {
     private static String eliminarComentario(String linea) {
         int commentIndex = linea.indexOf("//");
         if (commentIndex != -1) {
-            // Corta la línea DESDE donde empieza el comentario
             linea = linea.substring(0, commentIndex);
         }
         return linea.trim();
@@ -176,7 +175,7 @@ public class Lector {
 
 
     public static void imprimirProblema(Problema p) {
-        System.out.println("\n============== RESUMEN DEL PROBLEMA CARGADO ===============");
+        System.out.println("\n================================ RESUMEN DEL PROBLEMA CARGADO ===============================");
         System.out.println("\n--- CONFIGURACION ---");
         System.out.printf("Total de Nodos:\t\t%d\n", p.numNodos);
         System.out.printf("Total de Hubs:\t\t%d\n", p.numHubs);
@@ -214,7 +213,7 @@ public class Lector {
             }
             System.out.println();
         }
-        System.out.println("===========================================================\n");
+        System.out.println("====================================================================================================================\n");
     }
 
     public static void main(String[] args) {
