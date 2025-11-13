@@ -18,17 +18,25 @@ public class Solver {
     private Solucion mejorSolucionGlobal;
     private double costoMinimoGlobal = Double.POSITIVE_INFINITY;
 
+    // --- INICIO DE MODIFICACIÓN (PODA HEURÍSTICA) ---
+    /**
+     * Poda heurística: en lugar de explorar N! permutaciones de entrega,
+     * en cada paso solo exploramos las K opciones más cercanas.
+     * Esto reduce el factor de ramificación de N a K.
+     * 5 es un valor balanceado: rápido y con buena probabilidad de
+     * encontrar una solución cercana a la óptima.
+     */
+    private static final int K_VECINOS_CERCANOS = 5;
+    // --- FIN DE MODIFICACIÓN ---
+
     // --- Estado para UNA combinación de Hubs ---
-    // Guardamos el mejor VRP encontrado para la combinación de hubs actual
     private double mejorCostoDistanciaVRP;
     private List<Solucion.Ruta> mejorRutaVRP;
     
     // --- Estado Global para el Backtracking (Modificado y Restaurado) ---
-    // Esto evita el OutOfMemoryError
     private Map<Integer, Integer> paquetesPendientesEstado;
     private int numTotalPaquetesPendientesEstado;
     
-    // Para construir la ruta sobre la marcha
     private List<Solucion.Ruta> rutasActuales;
     private Solucion.Ruta rutaParcialActual;
 
@@ -50,35 +58,41 @@ public class Solver {
         System.out.println("\nIniciando búsqueda de la mejor combinación de Hubs...");
         List<Lector.Hub> hubs = problema.hubs;
         
-        // --- Branch and Bound
+        // --- Branch and Bound (Cálculo de solución base) ---
         System.out.println("Calculando una primera solución 'base' (sin hubs)...");
         Set<Integer> soloDeposito = new HashSet<>();
         soloDeposito.add(this.depositoId);
         evaluarCombinacion(0.0, soloDeposito, new ArrayList<>());
         
+        // Este es tu 'sout' de debug
         if (this.mejorSolucionGlobal != null) {
             System.out.printf("Solución base encontrada. Costo: %.2f. Usando para poda.\n", this.costoMinimoGlobal);
         } else {
             System.out.println("No se encontró solución base (raro), continuando...");
         }
-    // --- Fin
+        // --- Fin ---
 
-        // Iteramos 2^N_HUBS. Para 15 hubs (caso grande) son ~32k, es muy rápido.
         int numCombinaciones = 1 << hubs.size();
-        //Para debug en la terminal
+        // Este es tu 'sout' de debug
         System.out.printf("Total de combinaciones de Hubs a probar: %d\n", numCombinaciones); 
 
         for (int i = 0; i < numCombinaciones; i++) {
-            //Para debug en la terminal
+            
+            // --- Combinación 0 (sin hubs) ya fue procesada ---
+            if (i == 0) {
+                 System.out.printf("\n--- Probando Combinación %d / %d (Caso Base, ya calculado) ---\n", (i + 1), numCombinaciones);
+                 continue; // Ya hicimos este cálculo
+            }
+
+            // Este es tu 'sout' de debug
             System.out.printf("\n--- Probando Combinación %d / %d ---\n", (i + 1), numCombinaciones);
             Solucion solucionParcial = new Solucion();
             Set<Integer> puntosDeRecarga = new HashSet<>();
             puntosDeRecarga.add(this.depositoId);
             double costoHubsActual = 0.0;
 
-            // Construir el subconjunto de hubs para esta iteración
+            // Construir el subconjunto de hubs
             for (int j = 0; j < hubs.size(); j++) {
-                // Chequeamos si el j-ésimo bit está encendido
                 if ((i & (1 << j)) > 0) {
                     Lector.Hub hub = hubs.get(j);
                     costoHubsActual += hub.costoActivacion();
@@ -88,10 +102,9 @@ public class Solver {
             }
             
             // --- PODA Nivel 1 (Branch & Bound Global) ---
-            // Si activar estos hubs ya cuesta más que la mejor solución encontrada,
-            // ni siquiera intentamos calcular la ruta VRP.
             if (costoHubsActual >= this.costoMinimoGlobal) {
-                continue; // Podamos esta combinación de hubs
+                System.out.println("  -> PODADO (Nivel 1): Costo de hubs es mayor que la mejor solución.");
+                continue; 
             }
 
             // --- Resolver el VRP para esta combinación de hubs ---
@@ -108,7 +121,7 @@ public class Solver {
         this.paquetesPendientesEstado = new HashMap<>(this.demandasPorNodo);
         this.numTotalPaquetesPendientesEstado = this.problema.numPaquetes;
         this.mejorCostoDistanciaVRP = Double.POSITIVE_INFINITY;
-        this.mejorRutaVRP = null; // Aún no encontramos ruta para esta comb.
+        this.mejorRutaVRP = null; 
         
         this.rutasActuales = new ArrayList<>();
         this.rutaParcialActual = new Solucion.Ruta();
@@ -118,24 +131,30 @@ public class Solver {
         backtrackRecursivo(
             this.depositoId,
             this.capacidadCamion,
-            0.0, // costoDistanciaAcumulado
+            0.0, 
             costoHubs,
             puntosDeRecarga
         );
 
         // 3. Evaluar el resultado de esta combinación
+        if (this.mejorRutaVRP == null) {
+            // No se encontró una ruta válida para esta combinación
+             System.out.println("  -> No se encontró solución VRP para esta combinación.");
+            return;
+        }
+
         double costoTotalCombinacion = this.mejorCostoDistanciaVRP + costoHubs;
 
         if (costoTotalCombinacion < this.costoMinimoGlobal) {
             this.costoMinimoGlobal = costoTotalCombinacion;
             
-            // Construimos el objeto Solucion final
             this.mejorSolucionGlobal = new Solucion();
             this.mejorSolucionGlobal.costoTotalActivacion = costoHubs;
             this.mejorSolucionGlobal.costoTotalDistancia = this.mejorCostoDistanciaVRP;
             this.mejorSolucionGlobal.hubsActivados = hubsActivos;
-            this.mejorSolucionGlobal.rutas = this.mejorRutaVRP; // Guardamos la mejor ruta VRP encontrada
+            this.mejorSolucionGlobal.rutas = this.mejorRutaVRP; 
 
+            // Este es tu 'sout' de debug
             System.out.printf("  -> NUEVA MEJOR SOLUCIÓN GLOBAL! Costo: %.2f (Dist: %.2f + Hubs: %.2f) [Hubs: %s]\n",
                  this.costoMinimoGlobal,
                  this.mejorCostoDistanciaVRP,
@@ -144,65 +163,60 @@ public class Solver {
         }
     }
 
-    /**
-     * Función de backtracking principal. No retorna nada (void), sino que
-     * modifica el estado global 'mejorCostoDistanciaVRP' y 'mejorRutaVRP'
-     * si encuentra una solución VRP completa y mejor.
-     */
+
     private void backtrackRecursivo(int nodoActual, int capacidadRestante,
                                     double costoDistanciaAcumulado,
                                     double costoHubs,
                                     Set<Integer> puntosDeRecarga) {
         
         // --- PODA Nivel 2 (Branch & Bound Global) ---
-        // Si la distancia que ya recorrimos + hubs es peor que la mejor
-        // SOLUCIÓN TOTAL, esta rama es inútil.
         if (costoDistanciaAcumulado + costoHubs >= this.costoMinimoGlobal) {
             return; // PODADO (Global)
         }
 
         // --- PODA Nivel 3 (Branch & Bound Local del VRP) ---
-        // Si la distancia que ya recorrimos es peor que la mejor
-        // RUTA VRP (para esta comb. de hubs), esta rama es inútil.
         if (costoDistanciaAcumulado >= this.mejorCostoDistanciaVRP) {
             return; // PODADO (Local)
         }
 
         // --- CASO BASE (ÉXITO) ---
-        // No quedan paquetes por entregar
         if (this.numTotalPaquetesPendientesEstado == 0) {
-            // Encontramos una solución VRP completa.
-            // Calculamos el costo de volver al punto de recarga más cercano.
             int nodoRetorno = encontrarRecargaMasCercana(nodoActual, puntosDeRecarga);
             double costoRetorno = (nodoRetorno != -1) ? distancias[nodoActual][nodoRetorno] : 0.0;
             double costoVRPFinal = costoDistanciaAcumulado + costoRetorno;
 
-            // ¿Es la mejor solución VRP *para esta combinación de hubs*?
             if (costoVRPFinal < this.mejorCostoDistanciaVRP) {
                 this.mejorCostoDistanciaVRP = costoVRPFinal;
                 
-                // Guardamos la ruta completa
-                // (Necesitamos un constructor de copia en Solucion.Ruta)
                 Solucion.Ruta rutaFinal = new Solucion.Ruta(this.rutaParcialActual);
-                rutaFinal.nodosVisitados.add(nodoRetorno);
+                if (nodoRetorno != -1) {
+                     rutaFinal.nodosVisitados.add(nodoRetorno);
+                }
                 rutaFinal.costoDistanciaRuta += costoRetorno;
                 
                 this.mejorRutaVRP = new ArrayList<>(this.rutasActuales);
                 this.mejorRutaVRP.add(rutaFinal);
             }
-            return; // Fin de esta rama recursiva
+            return; 
         }
-
 
         // --- PASO RECURSIVO ---
 
         // Opción 1: Entregar un paquete (si tenemos capacidad)
         if (capacidadRestante > 0) {
-            // Usamos una copia de las keys para evitar ConcurrentModificationException
-            // al modificar el map 'paquetesPendientesEstado'
-            Set<Integer> clientesPendientes = new HashSet<>(this.paquetesPendientesEstado.keySet());
+            
+            // --- INICIO DE MODIFICACIÓN (PODA HEURÍSTICA) ---
+            // En lugar de iterar sobre TODOS los clientes pendientes,
+            // iteramos solo sobre los K más cercanos.
+            List<Integer> clientesCercanos = encontrarClientesMasCercanos(
+                nodoActual,
+                this.paquetesPendientesEstado.keySet(),
+                K_VECINOS_CERCANOS
+            );
 
-            for (int idCliente : clientesPendientes) {
+            for (int idCliente : clientesCercanos) {
+            // --- FIN DE MODIFICACIÓN ---
+
                 double costoViaje = distancias[nodoActual][idCliente];
 
                 // 1. MODIFICAR ESTADO
@@ -236,22 +250,27 @@ public class Solver {
         }
 
         // Opción 2: Ir a recargar (a un Hub o al Depósito)
-        // El camión siempre tiene la opción de recargar, a menos que
-        // ya esté en un punto de recarga con el tanque lleno.
-        boolean puedeRecargar = (capacidadRestante < this.capacidadCamion);
-        if (puedeRecargar) {
+        
+        // --- INICIO DE MODIFICACIÓN (LÓGICA DE RECARGA) ---
+        // Se puede recargar si NO estamos llenos, O si
+        // estamos vacíos Y AÚN QUEDAN paquetes por entregar (recarga obligatoria).
+        boolean esRecargaOpcional = (capacidadRestante < this.capacidadCamion);
+        boolean esRecargaObligatoria = (capacidadRestante == 0 && this.numTotalPaquetesPendientesEstado > 0);
+        
+        if (esRecargaOpcional || esRecargaObligatoria) {
+        // --- FIN DE MODIFICACIÓN ---
+            
             for (int idRecarga : puntosDeRecarga) {
-                if (idRecarga == nodoActual) continue; // No recargar donde ya estamos
+                if (idRecarga == nodoActual) continue; 
 
                 double costoViaje = distancias[nodoActual][idRecarga];
 
-                // 1. MODIFICAR ESTADO (Guardamos ruta parcial, empezamos una nueva)
-                Solucion.Ruta rutaAnterior = this.rutaParcialActual; // Guardamos para el backtrack
-                this.rutasActuales.add(rutaAnterior); // "Bancamos" la ruta
+                // 1. MODIFICAR ESTADO
+                Solucion.Ruta rutaAnterior = this.rutaParcialActual; 
+                this.rutasActuales.add(rutaAnterior); 
                 
                 this.rutaParcialActual = new Solucion.Ruta();
                 this.rutaParcialActual.nodosVisitados.add(idRecarga);
-                // (El costo de esta ruta parcial es 0 por ahora)
 
                 // 2. RECURSAR
                 backtrackRecursivo(
@@ -262,7 +281,7 @@ public class Solver {
                     puntosDeRecarga
                 );
 
-                // 3. DESHACER (Restaurar estado de la ruta)
+                // 3. DESHACER
                 this.rutaParcialActual = rutaAnterior;
                 this.rutasActuales.remove(this.rutasActuales.size() - 1);
             }
@@ -284,4 +303,29 @@ public class Solver {
         }
         return idRecargaMasCercana;
     }
+
+    // --- INICIO DE NUEVA FUNCIÓN HELPER ---
+    /**
+     * Encuentra los K clientes más cercanos a un nodo dado, de una lista de pendientes.
+     * @param nodoActual El nodo donde está el camión.
+     * @param clientesPendientes El Set de IDs de clientes que faltan entregar.
+     * @param k El número de vecinos a retornar.
+     * @return Una Lista de los K IDs de clientes más cercanos al nodoActual.
+     */
+    private List<Integer> encontrarClientesMasCercanos(int nodoActual, Set<Integer> clientesPendientes, int k) {
+        
+        // Convertimos el Set a una Lista para poder ordenarla
+        List<Integer> listaClientes = new ArrayList<>(clientesPendientes);
+
+        // Ordenamos la lista comparando la distancia de dos clientes (c1, c2)
+        // al nodoActual
+        listaClientes.sort((c1, c2) -> 
+            Double.compare(distancias[nodoActual][c1], distancias[nodoActual][c2])
+        );
+
+        // Devolvemos solo los primeros K elementos (los más cercanos)
+        // Usamos Math.min para evitar un error si hay menos de K clientes
+        return listaClientes.subList(0, Math.min(listaClientes.size(), k));
+    }
+    // --- FIN DE NUEVA FUNCIÓN HELPER ---
 }
