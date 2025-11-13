@@ -42,8 +42,9 @@ public class Lector {
 
         enum Seccion { CONFIG, NODOS, HUBS, PAQUETES, ARISTAS };
         Seccion seccionActual = Seccion.CONFIG; 
+        String rutaCompleta = "Output/" + nombreArchivo;
 
-        try (BufferedReader br = new BufferedReader(new FileReader(nombreArchivo))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaCompleta))) {
             String lineaOriginal;
             
             while ((lineaOriginal = br.readLine()) != null) {

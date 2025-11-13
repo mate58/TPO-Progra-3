@@ -114,7 +114,7 @@ public class GeneradorVRP {
         }
 
         // --- 3. ESCRITURA DEL ARCHIVO DE SALIDA
-        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("caso.txt")))) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("Output/caso.txt")))) {
 
             out.println("// --- CONFIGURACION ---");
             out.printf("NODOS %d\nHUBS %d\nPAQUETES %d\nCAPACIDAD_CAMION %d\nDEPOSITO_ID %d\n\n",
@@ -155,7 +155,7 @@ public class GeneradorVRP {
         long fin = System.nanoTime();
         double tiempoCpuUsado = (fin - inicio) / 1_000_000_000.0; 
 
-        System.out.println("Archivo 'caso.txt' generado con éxito.");
+        System.out.println("Archivo 'caso.txt' generado con éxito en la carpeta Output");
         System.out.printf("Tiempo de generación: %f segundos.\n", tiempoCpuUsado);
     }
 }

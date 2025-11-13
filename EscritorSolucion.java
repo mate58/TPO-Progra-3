@@ -6,11 +6,11 @@ import java.util.stream.Collectors;
 public class EscritorSolucion {
 
     /**
-     * @param sol La solución óptima encontrada.
-     * @param tiempoEjecucion El tiempo que tardó el solver (en segundos).
+      * @param sol La solución óptima encontrada.
+      * @param tiempoEjecucion El tiempo que tardó el solver (en segundos).
      */
     public static void escribir(Solucion sol, double tiempoEjecucion) {
-        try (PrintWriter out = new PrintWriter("solucion.txt")) {
+        try (PrintWriter out = new PrintWriter("Output/solucion.txt")) {
 
             // --- 1. HUBS ACTIVADOS ---
             out.println("// HUBS ACTIVADOS");

@@ -9,6 +9,19 @@ public class Solucion {
         public double costoDistanciaRuta = 0.0;
         public int paquetesEntregados = 0;
 
+        // --- CONSTRUCTOR VACÍO (YA LO TIENES) ---
+        public Ruta() {
+        }
+        
+        // --- AGREGA ESTE CONSTRUCTOR DE COPIA ---
+        public Ruta(Ruta otra) {
+            // Creamos nuevas listas, pero copiamos el contenido
+            this.nodosVisitados = new ArrayList<>(otra.nodosVisitados);
+            this.costoDistanciaRuta = otra.costoDistanciaRuta;
+            this.paquetesEntregados = otra.paquetesEntregados;
+        }
+        // --- FIN DE LA ADICIÓN ---
+
         @Override
         public String toString() {
             String formato = "  Ruta (Paquetes: %d, Dist: %.2f): %s";

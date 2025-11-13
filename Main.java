@@ -8,7 +8,7 @@ public class Main {
         
 
         String[] argsGenerador = new String[] {
-             "--nodos", "20", "--hubs", "3", "--paquetes", "10", "--seed", "20241"
+             "--nodos", "100", "--hubs", "8", "--paquetes", "40", "--seed", "424242"
         };
         
         GeneradorVRP.generarArchivoCaso(argsGenerador);
